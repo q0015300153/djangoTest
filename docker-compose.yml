@@ -1,0 +1,42 @@
+version: "3"
+
+services:
+    app-python:
+        container_name: app-python
+        build:
+            context: ./first_django
+            dockerfile: Dockerfile
+        restart: on-failure
+        command: uwsgi --http :8000 --module ${APP_PATH:?err}.wsgi
+        volumes:
+            - app-site:/app
+        expose:
+            - 8000
+        networks:
+            - default-network
+    app-nginx:
+        container_name: app-nginx
+        build:
+            context: ./nginx
+            dockerfile: Dockerfile
+        restart: on-failure
+        volumes:
+            - app-site:/usr/share/nginx/app
+        ports:
+            - 8081:80
+            - 442:443
+        depends_on:
+            - app-python
+        networks:
+            - default-network
+volumes:
+    app-site:
+        driver: local
+        driver_opts:
+            type: none
+            device: $PWD/${APP_PATH:?err}
+            o: bind
+
+networks:
+    default-network:
+        name: ${APP_NAME:?err}-network
