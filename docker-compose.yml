@@ -14,6 +14,18 @@ services:
             - 8000
         networks:
             - default-network
+    app-nodejs:
+        container_name: app-nodejs
+        build:
+            context: ./nodejs
+            dockerfile: Dockerfile
+        restart: on-failure
+        stdin_open: true
+        tty: true
+        volumes:
+            - app-site:/app
+        networks:
+            - default-network
     app-nginx:
         container_name: app-nginx
         build:
@@ -27,6 +39,7 @@ services:
             - 442:443
         depends_on:
             - app-python
+            - app-nodejs
         networks:
             - default-network
 volumes:
