@@ -41,6 +41,12 @@ services:
         command: uwsgi --http :8000 --module ${APP_PATH:?err}.wsgi
         environment:
             TZ: ${APP_TZ:?err}
+            APP_SECRET_KEY: ${APP_SECRET_KEY:?err}
+            POSTGRES_HOST: app-postgresql
+            POSTGRES_PORT: 5432
+            POSTGRES_USER_DB: ${PGSQL_DATA:?err}
+            POSTGRES_USER_NAME: ${PGSQL_USER:?err}
+            POSTGRES_USER_PASSWORD: ${PGSQL_PASS:?err}
         volumes:
             - app-site:/app
         expose:
