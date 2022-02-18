@@ -8,6 +8,7 @@ services:
             dockerfile: Dockerfile
         restart: always
         environment:
+            TZ: ${APP_TZ:?err}
             POSTGRES_PASSWORD: ${PGSQL_ROOT_PASS:?err}
             POSTGRES_USER_DB: ${PGSQL_DATA:?err}
             POSTGRES_USER_NAME: ${PGSQL_USER:?err}
@@ -38,6 +39,8 @@ services:
             dockerfile: Dockerfile
         restart: always
         command: uwsgi --http :8000 --module ${APP_PATH:?err}.wsgi
+        environment:
+            TZ: ${APP_TZ:?err}
         volumes:
             - app-site:/app
         expose:
@@ -52,6 +55,8 @@ services:
         restart: always
         stdin_open: true
         tty: true
+        environment:
+            TZ: ${APP_TZ:?err}
         volumes:
             - app-site:/app
         networks:
@@ -62,6 +67,8 @@ services:
             context: ./nginx
             dockerfile: Dockerfile
         restart: always
+        environment:
+            TZ: ${APP_TZ:?err}
         volumes:
             - app-site:/usr/share/nginx/app
         ports:
