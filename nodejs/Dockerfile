@@ -1,6 +1,5 @@
-FROM node:17
+FROM node:latest
 
-RUN mkdir /app
 WORKDIR /app
 
 VOLUME /app
