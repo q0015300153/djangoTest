@@ -79,7 +79,7 @@ services:
             - app-site:/usr/share/nginx/app
         ports:
             - 8081:80
-            - 442:443
+            - 8082:8082
         depends_on:
             - app-postgresql
             - app-pgadmin
