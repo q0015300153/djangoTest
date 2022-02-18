@@ -1,13 +1,46 @@
 version: "3"
 
 services:
+    app-postgresql:
+        container_name: app-postgresql
+        build:
+            context: ./postgresql
+            dockerfile: Dockerfile
+        restart: always
+        environment:
+            TZ: ${APP_TZ:?err}
+            POSTGRES_PASSWORD: ${PGSQL_ROOT_PASS:?err}
+            POSTGRES_USER_DB: ${PGSQL_DATA:?err}
+            POSTGRES_USER_NAME: ${PGSQL_USER:?err}
+            POSTGRES_USER_PASSWORD: ${PGSQL_PASS:?err}
+            POSTGRES_HOST_AUTH_METHOD: "md5"
+        volumes:
+            - app-db-postgre:/var/lib/postgresql/data
+        expose:
+            - 5432
+        networks:
+            - default-network
+    app-pgadmin:
+        image: dpage/pgadmin4
+        restart: always
+        environment:
+            PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:?err}
+            PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:?err}
+        ports:
+            - 5050:80
+        depends_on:
+            - app-postgresql
+        networks:
+            - default-network
     app-python:
         container_name: app-python
         build:
             context: ./first_django
             dockerfile: Dockerfile
-        restart: on-failure
+        restart: always
         command: uwsgi --http :8000 --module ${APP_PATH:?err}.wsgi
+        environment:
+            TZ: ${APP_TZ:?err}
         volumes:
             - app-site:/app
         expose:
@@ -19,9 +52,11 @@ services:
         build:
             context: ./nodejs
             dockerfile: Dockerfile
-        restart: on-failure
+        restart: always
         stdin_open: true
         tty: true
+        environment:
+            TZ: ${APP_TZ:?err}
         volumes:
             - app-site:/app
         networks:
@@ -31,13 +66,17 @@ services:
         build:
             context: ./nginx
             dockerfile: Dockerfile
-        restart: on-failure
+        restart: always
+        environment:
+            TZ: ${APP_TZ:?err}
         volumes:
             - app-site:/usr/share/nginx/app
         ports:
             - 8081:80
             - 442:443
         depends_on:
+            - app-postgresql
+            - app-pgadmin
             - app-python
             - app-nodejs
         networks:
@@ -49,7 +88,12 @@ volumes:
             type: none
             device: $PWD/${APP_PATH:?err}
             o: bind
-
+    app-db-postgre:
+        driver: local
+        driver_opts:
+            type: none
+            device: $PWD/${PGSQL_PATH:?err}
+            o: bind
 networks:
     default-network:
         name: ${APP_NAME:?err}-network
