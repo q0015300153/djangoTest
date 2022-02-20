@@ -41,6 +41,7 @@ services:
         command: uwsgi --http :8000 --module ${APP_PATH:?err}.wsgi
         environment:
             TZ: ${APP_TZ:?err}
+            CHOKIDAR_USEPOLLING: true
             APP_SECRET_KEY: ${APP_SECRET_KEY:?err}
             POSTGRES_HOST: app-postgresql
             POSTGRES_PORT: 5432
@@ -63,8 +64,10 @@ services:
         tty: true
         environment:
             TZ: ${APP_TZ:?err}
+            CHOKIDAR_USEPOLLING: true
+            APP_VUE: ${APP_VUE:?err}
         volumes:
-            - app-site:/app
+            - app-site-vue:/root
         networks:
             - default-network
     app-nginx:
@@ -75,6 +78,7 @@ services:
         restart: always
         environment:
             TZ: ${APP_TZ:?err}
+            CHOKIDAR_USEPOLLING: true
         volumes:
             - app-site:/usr/share/nginx/app
         ports:
@@ -93,6 +97,12 @@ volumes:
         driver_opts:
             type: none
             device: $PWD/${APP_PATH:?err}
+            o: bind
+    app-site-vue:
+        driver: local
+        driver_opts:
+            type: none
+            device: $PWD/${APP_PATH:?err}/${APP_VUE:?err}
             o: bind
     app-db-postgre:
         driver: local
